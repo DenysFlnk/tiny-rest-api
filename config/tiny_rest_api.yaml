@@ -1,0 +1,6 @@
+postgres:
+  database: tiny_rest_api
+  user: postgres
+  password: userPassword
+  host: localhost
+  port: 5432
