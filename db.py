@@ -8,10 +8,10 @@ class Database:
     def __init__(self, url):
         self.connection_url = url
         self.engine = create_engine(self.connection_url)
-        self.session = sessionmaker(bind=self.engine, autoflush=False, autocommit=True)
+        self.session = sessionmaker(bind=self.engine, autoflush=False, autocommit=False)
 
 
-    def get_all_users(self):
+    def get_all_users(self) -> list[User]:
         session = self.session()
         try:
             return session.query(User).all()
@@ -19,7 +19,7 @@ class Database:
             session.close()
 
 
-    def get_user(self, user_id):
+    def get_user(self, user_id) -> User:
         session = self.session()
         try:
             return session.query(User).filter_by(id=user_id).one()
@@ -27,10 +27,13 @@ class Database:
             session.close()
 
 
-    def add_user(self, user):
+    def add_user(self, user) -> User:
         session = self.session()
         try:
-            session.query(User).add_entity(user)
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+            return user
         finally:
             session.close()
 
@@ -39,6 +42,7 @@ class Database:
         session = self.session()
         try:
             session.query(User).filter_by(id=user_id).delete()
+            session.commit()
         finally:
             session.close()
 
@@ -49,6 +53,7 @@ class Database:
             old_user = session.query(User).filter_by(id=user_id).one()
             old_user.nickname = user.nickname
             old_user.is_banned = user.is_banned
-            session.query(User).filter_by(id=user_id).update(old_user)
+
+            session.commit()
         finally:
             session.close()
