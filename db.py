@@ -41,7 +41,8 @@ class Database:
     def delete_user(self, user_id) -> None:
         session = self.session()
         try:
-            session.query(User).filter_by(id=user_id).delete()
+            user = session.query(User).filter_by(id=user_id).one()
+            session.delete(user)
             session.commit()
         finally:
             session.close()
