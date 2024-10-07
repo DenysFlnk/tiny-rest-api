@@ -38,7 +38,7 @@ class Database:
             session.close()
 
 
-    def delete_user(self, user_id):
+    def delete_user(self, user_id) -> None:
         session = self.session()
         try:
             session.query(User).filter_by(id=user_id).delete()
@@ -47,7 +47,7 @@ class Database:
             session.close()
 
 
-    def update_user(self, user_id, user):
+    def update_user(self, user_id, user) -> None:
         session = self.session()
         try:
             old_user = session.query(User).filter_by(id=user_id).one()

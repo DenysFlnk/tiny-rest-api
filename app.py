@@ -1,12 +1,10 @@
+import os
+
 from aiohttp import web
 
 from db import Database
-from settings import config
 import user_service
 
-# TODO: change config to ENV
-DB_URL_FORMAT = "postgresql://{user}:{password}@{host}:{port}/{database}"
-db_url = DB_URL_FORMAT.format(**config['postgres'])
 
 ROOT_URL = '/users'
 USER_URL = '/users/{user_id}'
@@ -18,11 +16,18 @@ def main():
     init_db(app)
     init_api(app)
 
-    web.run_app(app)
+    web.run_app(app, port=os.environ.get('APP_PORT', 8080))
 
 
 def init_db(app):
-    db = Database(db_url)
+    db_name = os.environ.get('DATABASE_NAME', 'tiny_rest_api')
+    db_user = os.environ.get('POSTGRES_USER', 'postgres')
+    db_password = os.environ.get('POSTGRES_PASSWORD', 'userPassword')
+    db_host = os.environ.get('POSTGRES_HOST', 'localhost')
+    db_port = os.environ.get('POSTGRES_PORT', '5432')
+
+    db = Database(f'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}')
+
     app['db'] = db
 
 
