@@ -22,7 +22,7 @@ def main():
 
 
 def init_db(app):
-    db_name = os.environ.get('DATABASE_NAME', 'tiny_rest_api')
+    db_name = os.environ.get('POSTGRES_DB', 'tiny_rest_api')
     db_user = os.environ.get('POSTGRES_USER', 'postgres')
     db_password = os.environ.get('POSTGRES_PASSWORD', 'userPassword')
     db_host = os.environ.get('POSTGRES_HOST', 'localhost')
