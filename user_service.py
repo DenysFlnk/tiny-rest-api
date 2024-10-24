@@ -33,7 +33,7 @@ def get_user(request):
         user = db.get_user(user_id)
     except NoResultFound:
         LOGGER.warning(f'<Request_id:{request_id}> -> User with id:{user_id} not found', exc_info=True)
-        return web.HTTPNotFound(text=f'User with id:{user_id} not found')
+        return web.HTTPNotFound(reason=f'User with id:{user_id} not found')
 
     return web.json_response(user_to_dict(user), status=HTTPStatus.OK)
 
@@ -48,7 +48,7 @@ def delete_user(request):
         db.delete_user(user_id)
     except NoResultFound:
         LOGGER.warning(f'<Request_id:{request_id}> -> User with id:{user_id} not found', exc_info=True)
-        return web.HTTPNotFound(text=f'User with id:{user_id} not found')
+        return web.HTTPNotFound(reason=f'User with id:{user_id} not found')
 
     return web.HTTPNoContent()
 
@@ -71,14 +71,14 @@ async def update_user(request):
         return web.HTTPNotFound(text=f"User with id:{user.id} not found")
     except StatementError:
         LOGGER.warning(f'<Request_id:{request_id}> -> {INVALID_VALUES_MESSAGE}', exc_info=True)
-        return web.HTTPBadRequest(text=INVALID_VALUES_MESSAGE)
+        return web.HTTPBadRequest(reason=INVALID_VALUES_MESSAGE)
 
     return web.HTTPNoContent()
 
 
 async def create_user(request):
     request_id = str(uuid.uuid1())
-    LOGGER.info(f'{request} <Request_id:{request_id}> -> update_user()')
+    LOGGER.info(f'{request} <Request_id:{request_id}> -> create_user()')
     db = request.app['db']
     data = await request.json()
 
@@ -90,7 +90,7 @@ async def create_user(request):
         created_user = db.add_user(user)
     except StatementError:
         LOGGER.warning(f'<Request_id:{request_id}> -> {INVALID_VALUES_MESSAGE}', exc_info=True)
-        return web.HTTPBadRequest(text=INVALID_VALUES_MESSAGE)
+        return web.HTTPBadRequest(reason=INVALID_VALUES_MESSAGE)
 
     return web.json_response(user_to_dict(created_user), status=HTTPStatus.CREATED)
 

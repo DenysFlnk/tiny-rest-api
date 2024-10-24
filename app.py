@@ -3,9 +3,8 @@ import os
 
 from aiohttp import web
 
-from db import Database
 import user_service
-
+from db import Database
 
 ROOT_URL = '/users'
 USER_URL = '/users/{user_id}'
@@ -43,16 +42,16 @@ def init_api(app):
 
 def setup_logger():
     logger = logging.getLogger('tiny_rest_api_logger')
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     formatter = logging.Formatter('%(asctime)s [%(name)s] - %(levelname)s - %(message)s')
 
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
+    console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(formatter)
 
     file_handler = logging.FileHandler('tiny_rest_api_logger.log')
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
 
     logger.addHandler(console_handler)

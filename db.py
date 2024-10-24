@@ -1,60 +1,65 @@
+import logging
+
 from sqlalchemy import create_engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from user_model import User
+from user_model import User, Base
+
+LOGGER = logging.getLogger('tiny_rest_api_logger')
 
 
 class Database:
     def __init__(self, url):
         self.connection_url = url
         self.engine = create_engine(self.connection_url)
-        self.session = sessionmaker(bind=self.engine, autoflush=False, autocommit=False)
-
+        Session = sessionmaker(bind=self.engine, autoflush=False, autocommit=False)
+        self.session = Session()
+        Base.metadata.create_all(self.engine)
 
     def get_all_users(self) -> list[User]:
-        session = self.session()
         try:
-            return session.query(User).all()
-        finally:
-            session.close()
-
+            return self.session.query(User).all()
+        except IntegrityError as e:
+            LOGGER.warning('Error while getting all users', exc_info=True)
+            raise e
 
     def get_user(self, user_id) -> User:
-        session = self.session()
         try:
-            return session.query(User).filter_by(id=user_id).one()
-        finally:
-            session.close()
-
+            return self.session.query(User).filter_by(id=user_id).one()
+        except IntegrityError as e:
+            LOGGER.warning(f'Error while getting user with id:{user_id}', exc_info=True)
+            raise e
 
     def add_user(self, user) -> User:
-        session = self.session()
         try:
-            session.add(user)
-            session.commit()
-            session.refresh(user)
+            self.session.add(user)
+            self.session.commit()
+            self.session.refresh(user)
             return user
-        finally:
-            session.close()
-
+        except IntegrityError as e:
+            LOGGER.warning(f'Error while saving user:{user.id},{user.nickname},{user.is_banned}', exc_info=True)
+            self.session.rollback()
+            raise e
 
     def delete_user(self, user_id) -> None:
-        session = self.session()
         try:
-            user = session.query(User).filter_by(id=user_id).one()
-            session.delete(user)
-            session.commit()
-        finally:
-            session.close()
-
+            user = self.session.query(User).filter_by(id=user_id).one()
+            self.session.delete(user)
+            self.session.commit()
+        except IntegrityError as e:
+            LOGGER.warning(f'Error while deleting user with id:{user_id}', exc_info=True)
+            self.session.rollback()
+            raise e
 
     def update_user(self, user_id, user) -> None:
-        session = self.session()
         try:
-            old_user = session.query(User).filter_by(id=user_id).one()
+            old_user = self.session.query(User).filter_by(id=user_id).one()
             old_user.nickname = user.nickname
             old_user.is_banned = user.is_banned
 
-            session.commit()
-        finally:
-            session.close()
+            self.session.commit()
+        except IntegrityError as e:
+            LOGGER.warning(f'Error while updating user with id:{user_id}', exc_info=True)
+            self.session.rollback()
+            raise e
